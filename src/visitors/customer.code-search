@@ -1,0 +1,718 @@
+# Query: customer
+# ContextLines: 1
+
+254 results - 36 files
+
+src\App.tsx:
+  49      logging: true,
+  50:     rootRef: "root_collection/user",
+  51      watch: ["posts"]
+
+  76          >
+  77:             <Resource name="user" {...visitors}  />
+  78              <Resource
+
+src\types.ts:
+  24  
+  25: export interface Customer extends Record {
+  26      first_name: string;
+
+  56      status: ReviewStatus;
+  57:     customer_id: Identifier;
+  58      product_id: Identifier;
+
+src\dashboard\Dashboard.tsx:
+   16  import PendingReviews from './PendingReviews';
+   17: import Newuser from './Newuser';
+   18  import OrderChart from './OrderChart';
+   19  
+   20: import { Customer, Order, Review } from '../types';
+   21  
+
+   27  
+   28: interface CustomerData {
+   29:     [key: string]: Customer;
+   30  }
+
+   35      pendingOrders?: Order[];
+   36:     pendingOrdersuser?: CustomerData;
+   37      pendingReviews?: Review[];
+   38:     pendingReviewsuser?: CustomerData;
+   39      recentOrders?: Order[];
+
+  110          }));
+  111:         const { data: user } = await dataProvider.getMany<Customer>(
+  112:             'user',
+  113              {
+  114                  ids: aggregations.pendingOrders.map(
+  115:                     (order: Order) => order.customer_id
+  116                  ),
+
+  120              ...state,
+  121:             pendingOrdersuser: user.reduce(
+  122:                 (prev: CustomerData, customer) => {
+  123:                     prev[customer.id] = customer; // eslint-disable-line no-param-reassign
+  124                      return prev;
+
+  142          setState(state => ({ ...state, pendingReviews, nbPendingReviews }));
+  143:         const { data: user } = await dataProvider.getMany<Customer>(
+  144:             'user',
+  145              {
+  146:                 ids: pendingReviews.map(review => review.customer_id),
+  147              }
+
+  150              ...state,
+  151:             pendingReviewsuser: user.reduce(
+  152:                 (prev: CustomerData, customer) => {
+  153:                     prev[customer.id] = customer; // eslint-disable-line no-param-reassign
+  154                      return prev;
+
+  169          pendingOrders,
+  170:         pendingOrdersuser,
+  171          pendingReviews,
+  172:         pendingReviewsuser,
+  173          revenue,
+
+  186                      orders={pendingOrders}
+  187:                     user={pendingOrdersuser}
+  188                  />
+
+  206                      orders={pendingOrders}
+  207:                     user={pendingOrdersuser}
+  208                  />
+
+  228                              orders={pendingOrders}
+  229:                             user={pendingOrdersuser}
+  230                          />
+
+  244                              reviews={pendingReviews}
+  245:                             user={pendingReviewsuser}
+  246                          />
+  247                          <Spacer />
+  248:                         <Newuser />
+  249                      </div> */}
+
+src\dashboard\Newuser.tsx:
+  11  import { makeStyles } from '@material-ui/core/styles';
+  12: import CustomerIcon from '@material-ui/icons/PersonAdd';
+  13  import { Link } from 'react-router-dom';
+
+  17  import CardWithIcon from './CardWithIcon';
+  18: import { Customer } from '../types';
+  19  
+  20: const Newuser = () => {
+  21      const translate = useTranslate();
+
+  32          type: 'getList',
+  33:         resource: 'user',
+  34          payload: {
+
+  48          <CardWithIcon
+  49:             to="/user"
+  50:             icon={CustomerIcon}
+  51:             title={translate('pos.dashboard.new_user')}
+  52              subtitle={nb}
+
+  56                  {visitors
+  57:                     ? visitors.map((record: Customer) => (
+  58                            <ListItem
+  59                                button
+  60:                               to={`/user/${record.id}`}
+  61                                component={Link}
+
+  77                  component={Link}
+  78:                 to="/user"
+  79                  size="small"
+
+  82                  <Box p={1} className={classes.linkContent}>
+  83:                     {translate('pos.dashboard.all_user')}
+  84                  </Box>
+
+  98  
+  99: export default Newuser;
+
+src\dashboard\PendingOrders.tsx:
+  13  import { useTranslate } from 'react-admin';
+  14: import { Customer, Order } from '../types';
+  15  
+
+  17      orders?: Order[];
+  18:     user?: { [key: string]: Customer };
+  19  }
+
+  30  
+  31: const PendingOrders: FC<Props> = ({ orders = [], user = {} }) => {
+  32      const classes = useStyles();
+
+  45                          <ListItemAvatar>
+  46:                             {user[record.customer_id] ? (
+  47                                  <Avatar
+  48                                      src={`${
+  49:                                         user[record.customer_id].avatar
+  50                                      }?size=32x32`}
+
+  62                                  nb_items: record.basket.length,
+  63:                                 customer_name: user[record.customer_id]
+  64                                      ? `${
+  65:                                           user[record.customer_id]
+  66                                                .first_name
+  67                                        } ${
+  68:                                           user[record.customer_id]
+  69                                                .last_name
+
+src\dashboard\PendingReviews.tsx:
+  18  import StarRatingField from '../reviews/StarRatingField';
+  19: import { Customer, Review } from '../types';
+  20  
+
+  22      reviews?: Review[];
+  23:     user?: { [key: string]: Customer };
+  24      nb?: number;
+
+  26  
+  27: const PendingReviews: FC<Props> = ({ reviews = [], user = {}, nb }) => {
+  28      const classes = useStyles();
+
+  46                          <ListItemAvatar>
+  47:                             {user[record.customer_id] ? (
+  48                                  <Avatar
+  49                                      src={`${
+  50:                                         user[record.customer_id].avatar
+  51                                      }?size=32x32`}
+
+src\dataProvider\graphql.ts:
+  14      switch (resource) {
+  15:         case 'user':
+  16:             return 'Customer';
+  17  
+
+src\i18n\en.ts:
+   20              all_reviews: 'See all reviews',
+   21:             new_user: 'New user',
+   22:             all_user: 'See all user',
+   23              pending_orders: 'Pending Orders',
+
+   25                  items:
+   26:                     'by %{customer_name}, one item |||| by %{customer_name}, %{nb_items} items',
+   27              },
+
+   38              catalog: 'Catalog',
+   39:             user: 'user',
+   40          },
+
+   42      resources: {
+   43:         user: {
+   44:             name: 'Customer |||| user',
+   45              fields: {
+
+   77              page: {
+   78:                 delete: 'Delete Customer',
+   79              },
+
+  100                  address: 'Address',
+  101:                 customer_id: 'Customer',
+  102                  date_gte: 'Passed Since',
+
+  110                  order: 'Order',
+  111:                 customer: 'Customer',
+  112                  shipping_address: 'Shipping Address',
+
+  120                  date: 'Invoice date',
+  121:                 customer_id: 'Customer',
+  122                  command_id: 'Order',
+
+  178              fields: {
+  179:                 customer_id: 'Customer',
+  180                  command_id: 'Order',
+
+  201              fields: {
+  202:                 user: 'user',
+  203                  name: 'Name',
+
+src\i18n\fr.ts:
+   20              all_reviews: 'Voir tous les commentaires',
+   21:             new_user: 'Nouveaux clients',
+   22:             all_user: 'Voir tous les clients',
+   23              pending_orders: 'Commandes à traiter',
+
+   25                  items:
+   26:                     'par %{customer_name}, un poster |||| par %{customer_name}, %{nb_items} posters',
+   27              },
+
+   38              catalog: 'Catalogue',
+   39:             user: 'Clients',
+   40          },
+
+   42      resources: {
+   43:         user: {
+   44              name: 'Client |||| Clients',
+
+  109                  address: 'Adresse',
+  110:                 customer_id: 'Client',
+  111                  date_gte: 'Emises depuis',
+
+  120                  order: 'Commande',
+  121:                 customer: 'Client',
+  122                  shipping_address: 'Adresse de livraison',
+
+  131                  date: 'Date de facture',
+  132:                 customer_id: 'Client',
+  133                  command_id: 'Commande',
+
+  192              fields: {
+  193:                 customer_id: 'Client',
+  194                  command_id: 'Commande',
+
+  216              fields: {
+  217:                 user: 'Clients',
+  218                  name: 'Nom',
+
+src\invoices\InvoiceList.tsx:
+  45                  <DateField source="date" />
+  46:                 <ReferenceField source="customer_id" reference="user">
+  47                      <FullNameField />
+
+  49                  <ReferenceField
+  50:                     source="customer_id"
+  51:                     reference="user"
+  52                      link={false}
+
+src\invoices\InvoiceShow.tsx:
+  15  import Basket from '../orders/Basket';
+  16: import { Customer, Invoice } from '../types';
+  17  
+  18: const CustomerField: FC<FieldProps<Customer>> = ({ record }) => 
+  19  record ? (
+
+  56                              resource="invoices"
+  57:                             reference="user"
+  58:                             source="customer_id"
+  59                              basePath="/invoices"
+
+  62                          >
+  63:                             <CustomerField />
+  64                          </ReferenceField>
+
+src\layout\Menu.tsx:
+  22  
+  23: type MenuName = 'menuCatalog' | 'menuSales' | 'menuuser';
+  24  
+
+  85              {/* <SubMenu
+  86:                 handleToggle={() => handleToggle('menuuser')}
+  87:                 isOpen={state.menuuser}
+  88:                 name="pos.menu.user"
+  89                  icon={<visitors.icon />}
+
+  92                  <MenuItemLink
+  93:                     to={`/user`}
+  94:                     primaryText={"user"}
+  95                      leftIcon={<visitors.icon />}
+
+src\orders\MobileGrid.tsx:
+  17  
+  18: import CustomerReferenceField from '../visitors/CustomerReferenceField';
+  19  
+
+  80                          <span className={classes.cardContentRow}>
+  81:                             {translate('resources.user.name', 1)}:&nbsp;
+  82:                             <CustomerReferenceField
+  83                                  record={data[id]}
+
+src\orders\OrderEdit.tsx:
+   26  
+   27: import { Order, Customer } from '../types';
+   28  import Basket from './Basket';
+
+   45  
+   46: const CustomerDetails = ({ record }: { record?: Customer }) => (
+   47      <Box display="flex" flexDirection="column">
+
+   50              color="primary"
+   51:             to={`/user/${record?.id}`}
+   52              style={{ textDecoration: 'none' }}
+
+   66  
+   67: const CustomerAddress = ({ record }: { record?: Customer }) => (
+   68      <Box>
+
+  166                                          {translate(
+  167:                                             'resources.commands.section.customer'
+  168                                          )}
+
+  170                                      <ReferenceField
+  171:                                         source="customer_id"
+  172                                          resource="commands"
+  173:                                         reference="user"
+  174:                                         basePath="/user"
+  175                                          record={formProps.record}
+
+  177                                      >
+  178:                                         <CustomerDetails />
+  179                                      </ReferenceField>
+
+  187                                      <ReferenceField
+  188:                                         source="customer_id"
+  189                                          resource="commands"
+  190:                                         reference="user"
+  191:                                         basePath="/user"
+  192                                          record={formProps.record}
+
+  194                                      >
+  195:                                         <CustomerAddress />
+  196                                      </ReferenceField>
+
+src\orders\OrderList.tsx:
+   28  import NbItemsField from './NbItemsField';
+   29: import CustomerReferenceField from '../visitors/CustomerReferenceField';
+   30  import AddressField from '../visitors/AddressField';
+   31  import MobileGrid from './MobileGrid';
+   32: import { Customer } from '../types';
+   33  
+
+   35      <SearchInput source="q" alwaysOn />,
+   36:     <ReferenceInput source="customer_id" reference="user">
+   37          <AutocompleteInput
+   38:             optionText={(choice: Customer) =>
+   39                  choice.id // the empty choice is { id: '' }
+
+  176                                  <TextField source="reference" />
+  177:                                 <CustomerReferenceField />
+  178                                  <ReferenceField
+  179:                                     source="customer_id"
+  180:                                     reference="user"
+  181                                      link={false}
+
+  204                                  <TextField source="reference" />
+  205:                                 <CustomerReferenceField />
+  206                                  <ReferenceField
+  207:                                     source="customer_id"
+  208:                                     reference="user"
+  209                                      link={false}
+
+  233                                  <TextField source="reference" />
+  234:                                 <CustomerReferenceField />
+  235                                  <ReferenceField
+  236:                                     source="customer_id"
+  237:                                     reference="user"
+  238                                      link={false}
+
+src\products\ProductEdit.tsx:
+   23  
+   24: import CustomerReferenceField from '../visitors/CustomerReferenceField';
+   25  import StarRatingField from '../reviews/StarRatingField';
+
+  154                              <DateField source="date" />
+  155:                             <CustomerReferenceField />
+  156                              <StarRatingField />
+
+src\reviews\ReviewEdit.tsx:
+  17  import ProductReferenceField from '../products/ProductReferenceField';
+  18: import CustomerReferenceField from '../visitors/CustomerReferenceField';
+  19  import StarRatingField from './StarRatingField';
+
+  79                  >
+  80:                     <CustomerReferenceField
+  81                          formClassName={classes.inlineField}
+
+src\reviews\reviewFilters.tsx:
+   8  } from 'react-admin';
+   9: import { Customer } from '../types';
+  10  
+
+  20      />,
+  21:     <ReferenceInput source="customer_id" reference="user">
+  22          <AutocompleteInput
+  23:             optionText={(choice?: Customer) =>
+  24                  choice?.id // the empty choice is { id: '' }
+
+src\reviews\ReviewListDesktop.tsx:
+  12  import ProductReferenceField from '../products/ProductReferenceField';
+  13: import CustomerReferenceField from '../visitors/CustomerReferenceField';
+  14  import StarRatingField from './StarRatingField';
+
+  59              <DateField source="date" />
+  60:             <CustomerReferenceField link={false} />
+  61              <ProductReferenceField link={false} />
+
+src\reviews\ReviewListMobile.tsx:
+  19  import AvatarField from '../visitors/AvatarField';
+  20: import { Review, Customer } from './../types';
+  21  
+
+  54                                      record={item}
+  55:                                     source="customer_id"
+  56:                                     reference="user"
+  57                                      basePath={basePath}
+
+  67                                              record={item}
+  68:                                             source="customer_id"
+  69:                                             reference="user"
+  70                                              basePath={basePath}
+
+  76                                                          ? `${
+  77:                                                               (record as Customer)
+  78                                                                    .first_name
+  79                                                            } ${
+  80:                                                               (record as Customer)
+  81                                                                    .last_name
+
+src\segments\LinkToRelateduser.tsx:
+  18  
+  19: const LinkToRelateduser: FC<{ segment: string }> = ({ segment }) => {
+  20      const translate = useTranslate();
+
+  27              to={{
+  28:                 pathname: '/user',
+  29                  search: stringify({
+
+  35              <visitors.icon className={classes.icon} />
+  36:             {translate('resources.segments.fields.user')}
+  37          </Button>
+
+  40  
+  41: export default LinkToRelateduser;
+
+src\segments\Segments.tsx:
+  11  
+  12: import LinkToRelateduser from './LinkToRelateduser';
+  13  import segments from './data';
+
+  42                              <TableCell>
+  43:                                 <LinkToRelateduser segment={segment.id} />
+  44                              </TableCell>
+
+src\visitors\AddressField.tsx:
+  3  import { FieldProps } from 'react-admin';
+  4: import { Customer } from '../types';
+  5  
+  6: const AddressField: FC<FieldProps<Customer>> = ({ record }) =>
+  7      record ? (
+
+src\visitors\Aside.tsx:
+   84          { field: 'date', order: 'DESC' },
+   85:         { customer_id: record && record.id }
+   86      );
+
+   90          { field: 'date', order: 'DESC' },
+   91:         { customer_id: record && record.id }
+   92      );
+
+  102                              {translate(
+  103:                                 'resources.user.fieldGroups.history'
+  104                              )}
+
+  117                                              {translate(
+  118:                                                 'resources.user.fields.first_seen'
+  119                                              )}
+
+  159                                              {translate(
+  160:                                                 'resources.user.fields.last_seen'
+  161                                              )}
+
+src\visitors\AvatarField.tsx:
+  4  import { FieldProps } from 'react-admin';
+  5: import { Customer } from '../types';
+  6  
+  7: interface Props extends FieldProps<Customer> {
+  8      className?: string;
+
+src\visitors\CustomerLinkField.tsx:
+   5  import FullNameField from './FullNameField';
+   6: import { Customer } from '../types';
+   7  import VisitorShow from './VisitorShow';
+
+   9  
+  10: const CustomerLinkField: FC<FieldProps<Customer>> = props =>
+  11      props.record ? (
+  12:         <Link to={`/user/${props.record.id}`}>
+  13              <FullNameField {...props}/>
+
+  16  
+  17: CustomerLinkField.defaultProps = {
+  18:     source: 'customer_id',
+  19      addLabel: true,
+
+  21  
+  22: export default CustomerLinkField;
+  23  
+
+src\visitors\CustomerReferenceField.tsx:
+   6  
+   7: const CustomerReferenceField: FC<
+   8      Omit<ReferenceFieldProps, 'reference' | 'children' | 'source'> & {
+
+  11  > = props => (
+  12:     <ReferenceField source="customer_id" reference="user" {...props}>
+  13          <FullNameField />
+
+  16  
+  17: CustomerReferenceField.defaultProps = {
+  18:     source: 'customer_id',
+  19      addLabel: true,
+
+  21  
+  22: export default CustomerReferenceField;
+
+src\visitors\FullNameField.tsx:
+   6  import AvatarField from './AvatarField';
+   7: import { Customer } from '../types';
+   8  
+
+  21  
+  22: interface Props extends FieldProps<Customer> {
+  23      size?: string;
+
+  41      source: 'last_name',
+  42:     label: 'resources.user.fields.name',
+  43  };
+
+src\visitors\MobileGrid.tsx:
+  18  import SegmentsField from './SegmentsField';
+  19: import { Customer } from '../types';
+  20  
+
+  43      ids?: Identifier[];
+  44:     data?: { [key: string]: Customer };
+  45      basePath?: string;
+
+  75                              {translate(
+  76:                                 'resources.user.fields.last_seen_gte'
+  77                              )}
+
+  89                                  source="nb_commands"
+  90:                                 label="resources.user.fields.commands"
+  91                              />
+
+  94                              {translate(
+  95:                                 'resources.user.fields.total_spent'
+  96                              )}
+
+src\visitors\SegmentsField.tsx:
+   5  import segments from '../segments/data';
+   6: import { Customer } from '../types';
+   7  import { makeStyles } from '@material-ui/core/styles';
+
+  18  
+  19: const SegmentsField: FC<FieldProps<Customer>> = ({ record }) => {
+  20      const translate = useTranslate();
+
+src\visitors\SegmentsInput.tsx:
+  27      source: 'groups',
+  28:     resource: 'user',
+  29  };
+
+src\visitors\VisitorCreate.tsx:
+  60          errors.confirm_password = [
+  61:             'resources.user.errors.password_mismatch',
+  62          ];
+
+  72      const handleClose = () => {
+  73:         redirect('/user');
+  74      };
+
+src\visitors\VisitorEdit.tsx:
+   28  import { validatePasswords } from './VisitorCreate';
+   29: import { Customer } from '../types';
+   30  import classNames from 'classnames';
+
+   46  
+   47: const VisitorTitle: FC<FieldProps<Customer>> = ({ record }) =>
+   48      record ? <FullNameField record={record} size="32" /> : null;
+
+   83                                                  source="first_name"
+   84:                                                 resource="user"
+   85                                                  validate={requiredValidate}
+
+  103                                                  source="avatar"
+  104:                                                 resource="user"
+  105                                                  validate={requiredValidate}
+
+  117                                                  source="last_name"
+  118:                                                 resource="user"
+  119                                                  validate={requiredValidate}
+
+  127                                          source="email"
+  128:                                         resource="user"
+  129                                          validate={[email(), required()]}
+
+  139                                                  source="birthday"
+  140:                                                 resource="user"
+  141                                                  fullWidth
+
+  156                                          source="father_name"
+  157:                                         resource="user"
+  158                                          multiline
+
+  169                                                  source="city"
+  170:                                                 resource="user"
+  171                                                  fullWidth
+
+  181                                                  source="cnic"
+  182:                                                 resource="user"
+  183                                                  fullWidth
+
+  216                              saving={formProps.saving}
+  217:                             resource="user"
+  218                          />
+
+src\visitors\VisitorList.tsx:
+  22  import SegmentInput from './SegmentInput';
+  23: import CustomerLinkField from './CustomerLinkField';
+  24  import ColoredNumberField from './ColoredNumberField';
+
+  69                  <Datagrid optimized rowClick="edit">
+  70:                     <CustomerLinkField />
+  71                      <TextField source = "father_name" label ="Father Name"/>
+
+src\visitors\VisitorListAside.tsx:
+   38              <FilterList
+   39:                 label="resources.user.filters.last_visited"
+   40                  icon={<AccessTimeIcon />}
+
+   42                  <FilterListItem
+   43:                     label="resources.user.filters.today"
+   44                      value={{
+
+   49                  <FilterListItem
+   50:                     label="resources.user.filters.this_week"
+   51                      value={{
+
+   56                  <FilterListItem
+   57:                     label="resources.user.filters.last_week"
+   58                      value={{
+
+   66                  <FilterListItem
+   67:                     label="resources.user.filters.this_month"
+   68                      value={{
+
+   73                  <FilterListItem
+   74:                     label="resources.user.filters.last_month"
+   75                      value={{
+
+   83                  <FilterListItem
+   84:                     label="resources.user.filters.earlier"
+   85                      value={{
+
+   95              <FilterList
+   96:                 label="resources.user.filters.has_ordered"
+   97                  icon={<MonetizationOnIcon />}
+
+  115              <FilterList
+  116:                 label="resources.user.filters.has_newsletter"
+  117                  icon={<MailIcon />}
+
+  129              <FilterList
+  130:                 label="resources.user.filters.group"
+  131                  icon={<LocalOfferIcon />}
+
+src\visitors\VisitorShow.tsx:
+  16  import Basket from '../orders/Basket';
+  17: import { Customer, Invoice } from '../types';
+  18  
+  19: // const CustomerField: FC<FieldProps<Customer>> = ({ record }) => 
+  20  // record ? (
+
+  34     
+  35:     const { record } = useShowController<Customer>(props);
+  36      const classes = useStyles();
